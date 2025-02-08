@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\FatEnums\StateMachine;
 
+use ArtisanBuild\FatEnums\Attributes\CanTransitionTo;
+use ArtisanBuild\FatEnums\Attributes\CanTransitionToSelf;
+use ArtisanBuild\FatEnums\Attributes\FinalState;
 use BackedEnum;
 use Exception;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionNamedType;
-use ArtisanBuild\FatEnums\Attributes\CanTransitionTo;
-use ArtisanBuild\FatEnums\Attributes\CanTransitionToSelf;
-use ArtisanBuild\FatEnums\Attributes\FinalState;
 
 trait HasStateMachine
 {

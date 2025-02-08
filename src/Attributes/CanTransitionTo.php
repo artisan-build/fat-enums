@@ -11,10 +11,9 @@ use BackedEnum;
 class CanTransitionTo
 {
     /**
-     * @param array<BackedEnum> $destinations
+     * @param  array<BackedEnum>  $destinations
      */
     public function __construct(
         public array $destinations,
-    ) {
-    }
+    ) {}
 }
