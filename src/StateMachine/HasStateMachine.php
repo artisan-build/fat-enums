@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArtisanBuild\FatEnums\StateMachine;
 
 use BackedEnum;
@@ -8,6 +10,9 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionNamedType;
+use ArtisanBuild\FatEnums\Attributes\CanTransitionTo;
+use ArtisanBuild\FatEnums\Attributes\CanTransitionToSelf;
+use ArtisanBuild\FatEnums\Attributes\FinalState;
 
 trait HasStateMachine
 {
@@ -146,13 +151,16 @@ trait HasStateMachine
     {
         self::validateStateMachine($property);
 
+        /** @var class-string<BackedEnum> $enum */
         $enum = self::getNonUnionNonIntersectionType($property);
 
+        /** @var \Illuminate\Support\Collection<int, BackedEnum> $cases */
         $cases = collect($enum::cases());
 
         $caseValueSorter = function (string $first, string $second) use ($cases, $enum): int {
-            $first = $cases->search($enum::from($first));
-            $second = $cases->search($enum::from($second));
+            /** @var class-string<BackedEnum> $enum */
+            $first = $cases->search($enum::tryFrom($first));
+            $second = $cases->search($enum::tryFrom($second));
 
             return $first <=> $second;
         };
@@ -160,8 +168,8 @@ trait HasStateMachine
         $config = [
             'Default State' => $enum::DEFAULT->value,
             'Final States' => $cases
-                ->mapWithKeys(fn ($case) => [$case->value => $case])
-                ->map(fn ($case) => (new ReflectionClassConstant($enum, $case->name))
+                ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
+                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
                     ->getAttributes(FinalState::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
@@ -170,22 +178,22 @@ trait HasStateMachine
                 ->values()
                 ->toArray(),
             'Allowed Transitions' => $cases
-                ->mapWithKeys(fn ($case) => [$case->value => $case])
-                ->map(fn ($case) => (new ReflectionClassConstant($enum, $case->name))
+                ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
+                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
                     ->getAttributes(CanTransitionTo::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
                 ->map(fn ($attributes) => $attributes[0]->newInstance()->destinations)
                 ->map(fn ($destinations) => collect($destinations)
-                    ->map(fn ($destination) => $destination->value ?? $destination->name)
+                    ->map(fn (BackedEnum $destination) => $destination->value)
                     ->sort($caseValueSorter)
                     ->values()
                     ->toArray()
                 )
                 ->toArray(),
             'Self Transitions' => $cases
-                ->mapWithKeys(fn ($case) => [$case->value => $case])
-                ->map(fn ($case) => (new ReflectionClassConstant($enum, $case->name))
+                ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
+                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
                     ->getAttributes(CanTransitionToSelf::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
