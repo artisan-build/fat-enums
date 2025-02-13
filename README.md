@@ -1,6 +1,4 @@
-# Fat Enums
-
-Utilities to super-charge your boring enums.
+<p align="center"><img src="https://github.com/artisan-build/fat-enums/raw/HEAD/art/fat-enum-elephant.png" width="75%" alt="Fat Enums PHP Package Logo"></p>
 
 > [!WARNING]  
 > This package is currently under active development, and we have not yet released a major version. Once a 0.* version
