@@ -33,7 +33,7 @@ trait HasKeyValueAttributes
 
         if (! array_key_exists($key, $data)) {
             if ($default instanceof ShouldThrow) {
-               throw new MissingDataKeyException($this::class, $this->name, $key);
+                throw new MissingDataKeyException($this::class, $this->name, $key);
             }
 
             return $default;
