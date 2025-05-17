@@ -11,7 +11,7 @@
 
 ## Configuration
 
-## Usage
+---
 
 ### State Machines
 
@@ -108,8 +108,57 @@ The `ModelHasStateMachine` trait also uses the `HasStateMachine` trait, so all o
 
 The `HasStateMachine` trait provides a `serializeStateMachine` method that will return an array of the state machine's full configuration. This can be used to generate test data that will exercise all possible transitions, or to validate that your state machine is configured correctly compared to known good snapshots.
 
+---
+
+### Enum Bitmask Casts
+
+This package provides Laravel Eloquent casts for working with enums as bitmasks, offering both collection-based and array-based casts with nullable and non-nullable variants.
+
+#### Why Use Bitmasks?
+
+Bitmasks offer several key advantages over alternatives like storing JSON or arrays in the database:
+
+1. **Performance**: Each enum case takes exactly one bit, making them much smaller than JSON or array storage
+2. **Querying**: Enable powerful and fast database queries using simple bitwise operations
+3. **Indexing**: Unlike JSON or array fields, bitmask columns can be indexed efficiently
+4. **Atomic Operations**: Allow for atomic updates of multiple flags in a single operation
+5. **Type Safety**: Get compile-time type checking and IDE support while maintaining performance benefits
+
+#### Quick Start
+
+```php
+enum Permissions: int
+{
+    case READ   = 0x1 << 0;  // 1
+    case WRITE  = 0x1 << 1;  // 2
+    case DELETE = 0x1 << 2;  // 4
+    case ADMIN  = 0x1 << 3;  // 8
+}
+
+class User extends Model
+{
+    protected function casts(): array
+    {
+        return [
+            'permissions' => AsEnumCollectionBitmask::of(Permissions::class),
+        ];
+    }
+}
+
+// Usage
+$user->permissions = collect([Permissions::READ, Permissions::WRITE]);
+$user->save();
+
+if ($user->permissions->contains(Permissions::READ)) {
+    // User has read permission
+}
+```
+
+For more detailed documentation about bitmask casts, including best practices and advanced usage, see the [full Casts documentation](src/Casts/README.md).
+
+---
+
 ## Memberware
 
 This package is part of our internal toolkit and is optimized for our own purposes. We do not accept issues or PRs
 in this repository. 
-
