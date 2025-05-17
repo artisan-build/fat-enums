@@ -18,3 +18,7 @@
 /UPGRADING.md       export-ignore
 /phpstan.neon.dist  export-ignore
 /phpstan-baseline.neon  export-ignore
+
+# Ignore co-located test files and fixtures
+**/*Test.php        export-ignore
+**/TestFixtures/**  export-ignore
