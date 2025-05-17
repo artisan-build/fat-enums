@@ -107,6 +107,6 @@ final class AsEnumArrayObjectBitmask implements Castable
      */
     public static function of($class)
     {
-        return self::class . ':' . $class;
+        return self::class.':'.$class;
     }
-} 
+}

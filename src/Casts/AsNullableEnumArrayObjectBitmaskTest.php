@@ -132,4 +132,4 @@ final class AsNullableEnumArrayObjectBitmaskTest extends TestCase
 
         $model->roles = [OtherPermissionEnum::READ];
     }
-} 
+}

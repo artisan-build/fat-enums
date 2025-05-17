@@ -7,4 +7,4 @@ namespace ArtisanBuild\FatEnums\Casts\TestFixtures;
 enum OtherPermissionEnum: int
 {
     case READ = 1;
-} 
+}

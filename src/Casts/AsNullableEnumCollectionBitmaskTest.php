@@ -135,4 +135,4 @@ final class AsNullableEnumCollectionBitmaskTest extends TestCase
 
         $model->permissions = collect([OtherPermissionEnum::READ]);
     }
-} 
+}

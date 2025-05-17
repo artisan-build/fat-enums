@@ -133,4 +133,4 @@ final class AsEnumArrayObjectBitmaskTest extends TestCase
 
         $model->roles = [OtherPermissionEnum::READ];
     }
-} 
+}

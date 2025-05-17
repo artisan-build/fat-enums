@@ -79,6 +79,7 @@ final class AsEnumCollectionBitmask implements Castable
                         if (! $case instanceof $enumClass) {
                             throw new InvalidArgumentException("All enum cases must be instances of {$enumClass}");
                         }
+
                         return $carry | $case->value;
                     },
                     0
@@ -97,6 +98,6 @@ final class AsEnumCollectionBitmask implements Castable
      */
     public static function of($class)
     {
-        return self::class . ':' . $class;
+        return self::class.':'.$class;
     }
 }
