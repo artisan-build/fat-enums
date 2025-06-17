@@ -2,6 +2,8 @@
 
 namespace ArtisanBuild\FatEnums\Traits;
 
+use Illuminate\Support\Facades\Context;
+
 trait UsesContext
 {
     public function push(mixed $value): void

@@ -9,16 +9,19 @@ use ArtisanBuild\FatEnums\Attributes\CanTransitionToSelf;
 use ArtisanBuild\FatEnums\Attributes\FinalState;
 use BackedEnum;
 use Exception;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionNamedType;
+use Thunk\Verbs\State;
 
 trait HasStateMachine
 {
     public static function onlyRunInVerbsState(): void
     {
-        if (! is_a(static::class, \Thunk\Verbs\State::class, true)) {
+        /** @phpstan-ignore-next-line  */
+        if (! is_a(static::class, State::class, true)) {
             throw new Exception('This method can only be used on Verbs States.');
         }
     }
@@ -35,9 +38,9 @@ trait HasStateMachine
         if (is_null($type)) {
             if ($allow_null) {
                 return null;
-            } else {
-                throw new InvalidArgumentException("Property {$property} does not have a type defined on ".static::class);
             }
+
+            throw new InvalidArgumentException("Property {$property} does not have a type defined on ".static::class);
         }
 
         if (! $type instanceof ReflectionNamedType) {
@@ -154,7 +157,7 @@ trait HasStateMachine
         /** @var class-string<BackedEnum> $enum */
         $enum = self::getNonUnionNonIntersectionType($property);
 
-        /** @var \Illuminate\Support\Collection<int, BackedEnum> $cases */
+        /** @var Collection<int, BackedEnum> $cases */
         $cases = collect($enum::cases());
 
         $caseValueSorter = function (string $first, string $second) use ($cases, $enum): int {
