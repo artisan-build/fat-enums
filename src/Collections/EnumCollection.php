@@ -53,9 +53,4 @@ class EnumCollection extends \Illuminate\Support\Collection
     {
         return $this->enumClass;
     }
-
-    public function getEnumCases(): array
-    {
-        return $this->enumClass::cases();
-    }
 }
