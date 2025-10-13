@@ -21,7 +21,7 @@ trait ModelHasStateMachine
      */
     protected static function bootModelHasStateMachine(): void
     {
-        if (! (new ReflectionClass(static::class))->hasProperty('state_machines')) {
+        if (! new ReflectionClass(static::class)->hasProperty('state_machines')) {
             throw new Exception('The HasStateMachine::bootHasStateMachine() method can only be used on models that define a $state_machines array property.');
         }
 

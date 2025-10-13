@@ -17,20 +17,20 @@ trait IsStateMachine
     ): bool {
         if (
             $source === $destination &&
-            (new ReflectionClassConstant(self::class, $source->name))
+            new ReflectionClassConstant(self::class, $source->name)
                 ->getAttributes(CanTransitionToSelf::class)
         ) {
             return true;
         }
 
         if (
-            (new ReflectionClassConstant(self::class, $source->name))
+            new ReflectionClassConstant(self::class, $source->name)
                 ->getAttributes(FinalState::class)
         ) {
             return false;
         }
 
-        $attributes = (new ReflectionClassConstant(self::class, $source->name))
+        $attributes = new ReflectionClassConstant(self::class, $source->name)
             ->getAttributes(CanTransitionTo::class);
 
         if (count($attributes) === 0) {

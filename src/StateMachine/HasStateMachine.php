@@ -57,7 +57,7 @@ trait HasStateMachine
             'Default State' => $enum::DEFAULT->value,
             'Final States' => $cases
                 ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
-                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
+                ->map(fn (BackedEnum $case) => new ReflectionClassConstant($enum, $case->name)
                     ->getAttributes(FinalState::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
@@ -67,7 +67,7 @@ trait HasStateMachine
                 ->all(),
             'Allowed Transitions' => $cases
                 ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
-                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
+                ->map(fn (BackedEnum $case) => new ReflectionClassConstant($enum, $case->name)
                     ->getAttributes(CanTransitionTo::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
@@ -81,7 +81,7 @@ trait HasStateMachine
                 ->all(),
             'Self Transitions' => $cases
                 ->mapWithKeys(fn (BackedEnum $case) => [$case->value => $case])
-                ->map(fn (BackedEnum $case) => (new ReflectionClassConstant($enum, $case->name))
+                ->map(fn (BackedEnum $case) => new ReflectionClassConstant($enum, $case->name)
                     ->getAttributes(CanTransitionToSelf::class)
                 )
                 ->reject(fn ($attributes) => empty($attributes))
@@ -99,7 +99,7 @@ trait HasStateMachine
      */
     private static function getNonUnionNonIntersectionType(string $property, $allow_null = false): ?string
     {
-        $type = (new ReflectionClass(static::class))
+        $type = new ReflectionClass(static::class)
             ->getProperty($property)
             ->getType();
 
@@ -120,7 +120,7 @@ trait HasStateMachine
 
     private static function validateStateMachine(string $property): void
     {
-        if (! (new ReflectionClass(static::class))->hasProperty($property)) {
+        if (! new ReflectionClass(static::class)->hasProperty($property)) {
             throw new InvalidArgumentException("Property {$property} does not exist on ".static::class);
         }
 
@@ -151,13 +151,8 @@ trait HasStateMachine
         }
 
         $destinations = is_array($destination) ? $destination : [$destination];
-        foreach ($destinations as $destination) {
-            if (! $this->canTransitionBetween($property, $this->{$property}, $destination)) {
-                return false;
-            }
-        }
 
-        return true;
+        return array_all($destinations, fn ($destination) => $this->canTransitionBetween($property, $this->{$property}, $destination));
     }
 
     public function canTransitionBetween(

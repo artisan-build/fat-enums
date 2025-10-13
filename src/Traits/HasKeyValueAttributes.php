@@ -14,7 +14,7 @@ trait HasKeyValueAttributes
 {
     public function data(?string $key = null, mixed $default = new ShouldThrow): mixed
     {
-        $data_attribute = (new ReflectionClassConstant($this::class, $this->name))
+        $data_attribute = new ReflectionClassConstant($this::class, $this->name)
             ->getAttributes(WithData::class);
 
         if (empty($data_attribute)) {
