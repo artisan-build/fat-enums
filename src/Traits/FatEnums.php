@@ -17,13 +17,13 @@ trait FatEnums
         throw_if(
             condition: $num < 1,
             exception: InvalidArgumentException::class,
-            parameters: 'Number of random cases requested must be positive.',
+            message: 'Number of random cases requested must be positive.',
         );
 
         throw_if(
             condition: $num > count(static::cases()),
             exception: InvalidArgumentException::class,
-            parameters: 'Number of random cases requested exceeds the number of cases available.',
+            message: 'Number of random cases requested exceeds the number of cases available.',
         );
 
         return $num === 1
