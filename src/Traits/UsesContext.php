@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArtisanBuild\FatEnums\Traits;
 
 use Illuminate\Support\Facades\Context;

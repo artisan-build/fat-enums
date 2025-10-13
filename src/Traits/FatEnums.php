@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\FatEnums\Traits;
 
+use InvalidArgumentException;
+
 trait FatEnums
 {
     /**
@@ -14,12 +16,14 @@ trait FatEnums
     {
         throw_if(
             condition: $num < 1,
-            exception: new \InvalidArgumentException('Number of random cases requested must be positive.'),
+            exception: InvalidArgumentException::class,
+            parameters: 'Number of random cases requested must be positive.',
         );
 
         throw_if(
             condition: $num > count(static::cases()),
-            exception: new \InvalidArgumentException('Number of random cases requested exceeds the number of cases available.'),
+            exception: InvalidArgumentException::class,
+            parameters: 'Number of random cases requested exceeds the number of cases available.',
         );
 
         return $num === 1

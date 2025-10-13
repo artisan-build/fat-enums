@@ -17,7 +17,7 @@ final class AsNullableEnumArrayObjectBitmask implements Castable
      * @template TEnum of \BackedEnum
      *
      * @param  array{class-string<TEnum>}  $arguments
-     * @return \Illuminate\Contracts\Database\Eloquent\CastsAttributes<array<TEnum>|null, int|null>
+     * @return CastsAttributes<array<TEnum>|null, int|null>
      */
     public static function castUsing(array $arguments)
     {

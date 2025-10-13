@@ -57,23 +57,23 @@ enum NoConstantTestEnum: int
 enum NotStringConstantTestEnum: int
 {
     use DatabaseRecordsEnum;
+    case Foo = 1111;
 
     public const ModelName = 1111;
-    case Foo = 1111;
 }
 
 enum NotClassConstantTestEnum: int
 {
     use DatabaseRecordsEnum;
+    case Foo = 1111;
 
     public const ModelName = 'NotAClass';
-    case Foo = 1111;
 }
 
 enum NotModelConstantTestEnum: int
 {
     use DatabaseRecordsEnum;
+    case Foo = 1111;
 
     public const ModelName = FatEnumsServiceProvider::class;
-    case Foo = 1111;
 }

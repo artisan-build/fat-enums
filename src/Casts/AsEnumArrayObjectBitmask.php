@@ -17,7 +17,7 @@ final class AsEnumArrayObjectBitmask implements Castable
      * @template TEnum of \BackedEnum
      *
      * @param  array{class-string<TEnum>}  $arguments
-     * @return \Illuminate\Contracts\Database\Eloquent\CastsAttributes<array<TEnum>, int>
+     * @return CastsAttributes<array<TEnum>, int>
      */
     public static function castUsing(array $arguments)
     {

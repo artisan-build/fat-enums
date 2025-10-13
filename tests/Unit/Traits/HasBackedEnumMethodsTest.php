@@ -14,5 +14,5 @@ it('returns null when getting a case by name that does not exist', function (): 
 });
 
 it('throws an exception when getting a case by name that does not exist', function (): void {
-    expect(fn () => UnbackedEnum::from('Missing'))->toThrow(\Exception::class);
+    expect(fn () => UnbackedEnum::from('Missing'))->toThrow(Exception::class);
 });

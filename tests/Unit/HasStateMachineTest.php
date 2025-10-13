@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use ArtisanBuild\FatEnums\StateMachine\InvalidStateTransition;
 use ArtisanBuild\FatEnums\Tests\Fixtures\ClassWithStateMachine;
 use ArtisanBuild\FatEnums\Tests\Fixtures\StateMachineTestEnum;

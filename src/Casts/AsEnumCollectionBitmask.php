@@ -18,7 +18,7 @@ final class AsEnumCollectionBitmask implements Castable
      * @template TEnum of \BackedEnum
      *
      * @param  array{class-string<TEnum>}  $arguments
-     * @return \Illuminate\Contracts\Database\Eloquent\CastsAttributes<\Illuminate\Support\Collection<array-key, TEnum>, iterable<TEnum>>
+     * @return CastsAttributes<Collection<array-key, TEnum>, iterable<TEnum>>
      */
     public static function castUsing(array $arguments)
     {
@@ -44,7 +44,7 @@ final class AsEnumCollectionBitmask implements Castable
              * Cast the given value.
              *
              * @param  array<string, mixed>  $attributes
-             * @return \Illuminate\Support\Collection<int, BackedEnum>
+             * @return Collection<int, BackedEnum>
              */
             public function get($model, $key, $value, $attributes)
             {

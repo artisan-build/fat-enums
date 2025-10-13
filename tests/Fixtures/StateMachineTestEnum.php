@@ -16,8 +16,6 @@ enum StateMachineTestEnum: string implements StateMachine
     use IsStateMachine;
     use SerializesForNova;
 
-    const DEFAULT = self::START;
-
     #[CanTransitionTo([
         self::MIDDLE,
         self::END,
@@ -39,4 +37,6 @@ enum StateMachineTestEnum: string implements StateMachine
     #[CanTransitionToSelf]
     #[FinalState]
     case CANCELLED = 'CANCELLED';
+
+    const DEFAULT = self::START;
 }
