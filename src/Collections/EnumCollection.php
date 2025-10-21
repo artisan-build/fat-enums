@@ -35,7 +35,7 @@ class EnumCollection extends \Illuminate\Support\Collection
             }
         }
 
-        // chec that every item is an instance of the **same** enum class
+        // check that every item is an instance of the **same** enum class
         $enumClass = $items[0]::class;
         foreach ($items as $item) {
             if ($item::class !== $enumClass) {
