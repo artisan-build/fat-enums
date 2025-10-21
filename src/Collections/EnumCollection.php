@@ -9,12 +9,17 @@ use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use UnitEnum;
 
+/**
+ * @template T of UnitEnum
+ *
+ * @extends Collection<array-key, T>
+ */
 class EnumCollection extends Collection
 {
     private readonly string $enumClass;
 
     /**
-     * @param  enum-class<T>|iterable<T>  $items
+     * @param  enum-string<T>|iterable<T>  $items
      */
     public function __construct(
         string|iterable $items = [],
