@@ -24,8 +24,9 @@ class EnumCollection extends \Illuminate\Support\Collection
             }
 
             $this->enumClass = $items;
-            $items = $items::cases();
-            goto construct;
+            parent::__construct($items::cases());
+
+            return;
         }
 
         if (!is_array($items)) {
@@ -49,7 +50,6 @@ class EnumCollection extends \Illuminate\Support\Collection
 
         $this->enumClass = $enumClass;
 
-        construct:
         parent::__construct($items);
     }
 
