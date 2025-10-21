@@ -28,6 +28,10 @@ class EnumCollection extends \Illuminate\Support\Collection
             goto construct;
         }
 
+        if (!is_array($items)) {
+            $items = iterator_to_array($items);
+        }
+
         // check that every item is an enum
         foreach ($items as $item) {
             if (!$item instanceof BackedEnum && !$item instanceof UnitEnum) {
