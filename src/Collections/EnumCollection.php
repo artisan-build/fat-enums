@@ -30,7 +30,7 @@ class EnumCollection extends \Illuminate\Support\Collection
 
         // check that every item is an enum
         foreach ($items as $item) {
-            if (!$item instanceof BackedEnum || !$item instanceof UnitEnum) {
+            if (!$item instanceof BackedEnum && !$item instanceof UnitEnum) {
                 throw new InvalidArgumentException('All items must be an enum instance, ' . get_debug_type($item) . ' given');
             }
         }
