@@ -13,32 +13,32 @@ it('can get a model from a backed enum', function (): void {
 });
 
 it('throws an exception if the model is not found', function (): void {
-    expect(fn () => ModelBackedTestEnum::Baz->get())
+    expect(ModelBackedTestEnum::Baz->get(...))
         ->toThrow(ModelNotFoundException::class);
 });
 
 it('throws an exception if the enum is not backed', function (): void {
-    expect(fn () => UnbackedTestEnum::Foo->get())
+    expect(UnbackedTestEnum::Foo->get(...))
         ->toThrow(Exception::class, 'DatabaseRecords trait can only be used with backed enums.');
 });
 
 it('throws an exception if the model name constant is not defined', function (): void {
-    expect(fn () => NoConstantTestEnum::Foo->get())
+    expect(NoConstantTestEnum::Foo->get(...))
         ->toThrow(Exception::class, 'ModelName constant must be defined in the enum.');
 });
 
 it('throws an exception if the model name constant is not a string', function (): void {
-    expect(fn () => NotStringConstantTestEnum::Foo->get())
+    expect(NotStringConstantTestEnum::Foo->get(...))
         ->toThrow(Exception::class, 'ModelName constant must be a string.');
 });
 
 it('throws an exception if the model name constant is not a valid class', function (): void {
-    expect(fn () => NotClassConstantTestEnum::Foo->get())
+    expect(NotClassConstantTestEnum::Foo->get(...))
         ->toThrow(Exception::class, 'ModelName constant must be a valid class.');
 });
 
 it('throws an exception if the model name constant is not a subclass of Model', function (): void {
-    expect(fn () => NotModelConstantTestEnum::Foo->get())
+    expect(NotModelConstantTestEnum::Foo->get(...))
         ->toThrow(Exception::class, 'ModelName constant must be a subclass of Illuminate\Database\Eloquent\Model');
 });
 
