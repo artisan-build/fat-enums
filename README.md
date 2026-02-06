@@ -112,7 +112,7 @@ The `HasStateMachine` trait provides a `serializeStateMachine` method that will 
 
 ### Enum Bitmask Casts
 
-This package provides Laravel Eloquent casts for working with enums as bitmasks, offering both collection-based and array-based casts with nullable and non-nullable variants.
+This package provides Laravel Eloquent casts for working with enums as bitmasks, offering collection-based and array-based casts, a generic nullable wrapper (`AsNullableEnum`), and a polymorphic cast (`AsPolymorphicEnum`) that resolves based on another model field.
 
 #### Why Use Bitmasks?
 
@@ -141,6 +141,7 @@ class User extends Model
     {
         return [
             'permissions' => AsEnumCollectionBitmask::of(Permissions::class),
+            'optional_perms' => AsNullableEnum::of(AsEnumCollectionBitmask::of(Permissions::class)),
         ];
     }
 }

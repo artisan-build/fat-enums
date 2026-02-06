@@ -1,6 +1,6 @@
 # Enum Bitmask Casts
 
-This package provides Laravel Eloquent casts for working with enums as bitmasks. It includes both collection-based and array-based casts, with nullable and non-nullable variants.
+This package provides Laravel Eloquent casts for working with enums as bitmasks. It includes collection-based and array-based casts, a generic nullable wrapper, and a polymorphic cast that resolves based on another model field.
 
 ## Why Use Bitmasks?
 
@@ -12,7 +12,7 @@ At first glance, storing multiple enum values as a single integer might seem com
    ```sql
    -- Find all users with READ permission
    SELECT * FROM users WHERE permissions & 1 = 1;
-   
+
    -- Find all users with both READ and WRITE permissions
    SELECT * FROM users WHERE permissions & 3 = 3;
    ```
@@ -27,21 +27,21 @@ This package makes it easy to work with bitmasks in a Laravel-friendly way, givi
 
 ## Available Casts
 
-### Collection-based Casts
+### Core Casts
 
-- `AsEnumCollectionBitmask` - Stores multiple enum values as a single bitmask integer (non-nullable)
-- `AsNullableEnumCollectionBitmask` - Stores multiple enum values as a single bitmask integer (nullable)
+- `AsEnumCollectionBitmask` - Returns a Laravel Collection of enum cases from a bitmask integer
+- `AsEnumArrayObjectBitmask` - Returns a PHP array of enum cases from a bitmask integer
 
-### Array-based Casts
+### Wrappers
 
-- `AsEnumArrayObjectBitmask` - Stores an array of enum values as a single bitmask integer (non-nullable)
-- `AsNullableEnumArrayObjectBitmask` - Stores an array of enum values as a single bitmask integer (nullable)
+- `AsNullableEnum` - Wraps any cast to make it nullable (returns/stores `null` instead of throwing)
+- `AsPolymorphicEnum` - Resolves to different inner casts based on another model field
 
 ## Usage
 
 ### Defining Your Enum
 
-Your enum must be a `BackedEnum` with integer values. For both collection-based and array-based casts, use bit shifting to define powers of 2:
+Your enum must be a `BackedEnum` with integer values. Use bit shifting to define powers of 2:
 
 ```php
 enum PermissionEnum: int
@@ -53,7 +53,7 @@ enum PermissionEnum: int
 }
 ```
 
-This makes it easier to add new permissions without having to calculate the next power of 2. Not every bit has be get used - you can leave gaps for visual separation, or to reserve spots for related future data.
+This makes it easier to add new permissions without having to calculate the next power of 2. Not every bit has to get used - you can leave gaps for visual separation, or to reserve spots for related future data.
 
 ### Using the Casts
 
@@ -61,44 +61,50 @@ There are two ways to define casts in your model:
 
 1. Using the `$casts` property (requires string concatenation):
 ```php
-use App\Casts\AsEnumCollectionBitmask;
-use App\Casts\AsNullableEnumCollectionBitmask;
-use App\Casts\AsEnumArrayObjectBitmask;
-use App\Casts\AsNullableEnumArrayObjectBitmask;
+use ArtisanBuild\FatEnums\Casts\AsEnumCollectionBitmask;
+use ArtisanBuild\FatEnums\Casts\AsEnumArrayObjectBitmask;
+use ArtisanBuild\FatEnums\Casts\AsNullableEnum;
 
 class User extends Model
 {
     protected $casts = [
-        // Collection-based casts
+        // Collection-based
         'permissions' => AsEnumCollectionBitmask::class . ':' . PermissionEnum::class,
-        'optional_permissions' => AsNullableEnumCollectionBitmask::class . ':' . PermissionEnum::class,
-        
-        // Array-based casts
+
+        // Array-based
         'roles' => AsEnumArrayObjectBitmask::class . ':' . PermissionEnum::class,
-        'optional_roles' => AsNullableEnumArrayObjectBitmask::class . ':' . PermissionEnum::class,
+
+        // Nullable collection-based
+        'optional_permissions' => AsNullableEnum::class . ':' . AsEnumCollectionBitmask::class . ':' . PermissionEnum::class,
+
+        // Nullable array-based
+        'optional_roles' => AsNullableEnum::class . ':' . AsEnumArrayObjectBitmask::class . ':' . PermissionEnum::class,
     ];
 }
 ```
 
 2. Using the `casts()` method (allows using the `of()` static method):
 ```php
-use App\Casts\AsEnumCollectionBitmask;
-use App\Casts\AsNullableEnumCollectionBitmask;
-use App\Casts\AsEnumArrayObjectBitmask;
-use App\Casts\AsNullableEnumArrayObjectBitmask;
+use ArtisanBuild\FatEnums\Casts\AsEnumCollectionBitmask;
+use ArtisanBuild\FatEnums\Casts\AsEnumArrayObjectBitmask;
+use ArtisanBuild\FatEnums\Casts\AsNullableEnum;
 
 class User extends Model
 {
     protected function casts(): array
     {
         return [
-            // Collection-based casts
+            // Collection-based
             'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-            'optional_permissions' => AsNullableEnumCollectionBitmask::of(PermissionEnum::class),
-            
-            // Array-based casts
+
+            // Array-based
             'roles' => AsEnumArrayObjectBitmask::of(PermissionEnum::class),
-            'optional_roles' => AsNullableEnumArrayObjectBitmask::of(PermissionEnum::class),
+
+            // Nullable collection-based
+            'optional_permissions' => AsNullableEnum::of(AsEnumCollectionBitmask::of(PermissionEnum::class)),
+
+            // Nullable array-based
+            'optional_roles' => AsNullableEnum::of(AsEnumArrayObjectBitmask::of(PermissionEnum::class)),
         ];
     }
 }
@@ -162,6 +168,67 @@ $user->roles = array_filter($user->roles, fn ($r) => $r !== PermissionEnum::WRIT
 $user->save(); // Don't forget to save the model!
 ```
 
+### AsNullableEnum Wrapper
+
+`AsNullableEnum` wraps any `Castable` cast to add null support. When the database value is `null`, it returns `null` instead of delegating to the inner cast. When setting `null`, it stores `null` in the database.
+
+```php
+// Nullable collection
+'permissions' => AsNullableEnum::of(AsEnumCollectionBitmask::of(PermissionEnum::class))
+
+// Nullable array
+'roles' => AsNullableEnum::of(AsEnumArrayObjectBitmask::of(PermissionEnum::class))
+```
+
+### AsPolymorphicEnum Cast
+
+`AsPolymorphicEnum` resolves to different inner casts based on the raw value of a discriminator field on the same model. This is useful when the same column stores different enum types depending on context.
+
+```php
+enum VolleyballPositions: int
+{
+    case SETTER         = 0x1 << 0;
+    case LIBERO         = 0x1 << 1;
+    case OUTSIDE_HITTER = 0x1 << 2;
+}
+
+enum BasketballPositions: int
+{
+    case POINT_GUARD    = 0x1 << 0;
+    case SHOOTING_GUARD = 0x1 << 1;
+    case CENTER         = 0x1 << 2;
+}
+
+class Player extends Model
+{
+    protected function casts(): array
+    {
+        return [
+            'positions' => AsPolymorphicEnum::of('sport', [
+                'volleyball' => AsEnumCollectionBitmask::of(VolleyballPositions::class),
+                'basketball' => AsEnumCollectionBitmask::of(BasketballPositions::class),
+            ]),
+        ];
+    }
+}
+
+// When $player->sport is 'volleyball', $player->positions uses VolleyballPositions
+// When $player->sport is 'basketball', $player->positions uses BasketballPositions
+```
+
+`AsPolymorphicEnum` reads the discriminator from raw attributes (not cast values), so it won't trigger infinite loops with other casts.
+
+It composes with `AsNullableEnum`:
+
+```php
+'positions' => AsNullableEnum::of(AsPolymorphicEnum::of('sport', [
+    'volleyball' => AsEnumCollectionBitmask::of(VolleyballPositions::class),
+    'basketball' => AsEnumCollectionBitmask::of(BasketballPositions::class),
+]))
+```
+
+**Note:** `AsPolymorphicEnum` only works with the `casts()` method, not the `$casts` property, because `of()` requires function calls that can't be evaluated in a property declaration.
+
 ### Important Note About Persistence
 
 When modifying collections or arrays of enum values, remember that you must explicitly call `save()` on the model to persist the changes to the database. The changes are only stored in memory until you save the model:
@@ -174,20 +241,42 @@ $user->save(); // Changes are now persisted to the database
 ### Nullable vs Non-nullable
 
 - Non-nullable casts (`AsEnumCollectionBitmask`, `AsEnumArrayObjectBitmask`):
-  - Default to empty collection/array when null is provided
-  - Always return a value (empty collection/array or default enum cases)
+  - Throw an exception when null is provided
+  - Always return a collection or array
 
-- Nullable casts (`AsNullableEnumCollectionBitmask`, `AsNullableEnumArrayObjectBitmask`):
+- Nullable casts (wrapped with `AsNullableEnum`):
   - Allow null values in the database
   - Return null when the database value is null
+
+## Migration Guide
+
+If you were using the now-removed `AsNullableEnumCollectionBitmask` or `AsNullableEnumArrayObjectBitmask` classes, replace them with `AsNullableEnum` wrapping the non-nullable variant:
+
+```php
+// Before
+'permissions' => AsNullableEnumCollectionBitmask::of(PermissionEnum::class)
+// After
+'permissions' => AsNullableEnum::of(AsEnumCollectionBitmask::of(PermissionEnum::class))
+
+// Before
+'roles' => AsNullableEnumArrayObjectBitmask::of(PermissionEnum::class)
+// After
+'roles' => AsNullableEnum::of(AsEnumArrayObjectBitmask::of(PermissionEnum::class))
+
+// Before ($casts property)
+'permissions' => AsNullableEnumCollectionBitmask::class . ':' . PermissionEnum::class
+// After ($casts property)
+'permissions' => AsNullableEnum::class . ':' . AsEnumCollectionBitmask::class . ':' . PermissionEnum::class
+```
 
 ## Best Practices
 
 1. Use collection-based casts when you need to store multiple enum values efficiently in a single column and want to work with Laravel Collections
 2. Use array-based casts when you need to store multiple enum values efficiently in a single column and prefer working with PHP arrays
-3. Use nullable casts when you need to distinguish between "no value" and "explicitly no value"
-4. Use bit shifting (`0x1 << n`) to define enum values for both collection-based and array-based casts
-5. Consider using constants to make bit positions more readable and maintainable
-6. Consider using descriptive enum case names that clearly indicate their purpose
-7. Always call `save()` on the model after modifying collections or arrays of enum values
-8. Prefer using the `casts()` method over the `$casts` property when possible, as it allows for more readable cast definitions using the `of()` static method 
+3. Wrap with `AsNullableEnum` when you need to distinguish between "no value" and "explicitly no value"
+4. Use `AsPolymorphicEnum` when the same column stores different enum types depending on a discriminator field
+5. Use bit shifting (`0x1 << n`) to define enum values for both collection-based and array-based casts
+6. Consider using constants to make bit positions more readable and maintainable
+7. Consider using descriptive enum case names that clearly indicate their purpose
+8. Always call `save()` on the model after modifying collections or arrays of enum values
+9. Prefer using the `casts()` method over the `$casts` property when possible, as it allows for more readable cast definitions using the `of()` static method
