@@ -216,6 +216,15 @@ class Player extends Model
 // When $player->sport is 'basketball', $player->positions uses BasketballPositions
 ```
 
+You can use enum cases directly as map keys with the `case()` helper. For backed enums it uses `->value`, for non-backed enums it uses `->name`:
+
+```php
+'positions' => AsPolymorphicEnum::of('sport', [
+    ...AsPolymorphicEnum::case(SportEnum::Volleyball, AsEnumCollectionBitmask::of(VolleyballPositions::class)),
+    ...AsPolymorphicEnum::case(SportEnum::Basketball, AsEnumCollectionBitmask::of(BasketballPositions::class)),
+])
+```
+
 `AsPolymorphicEnum` reads the discriminator from raw attributes (not cast values), so it won't trigger infinite loops with other casts.
 
 It composes with `AsNullableEnum`:
@@ -252,21 +261,16 @@ $user->save(); // Changes are now persisted to the database
 
 If you were using the now-removed `AsNullableEnumCollectionBitmask` or `AsNullableEnumArrayObjectBitmask` classes, replace them with `AsNullableEnum` wrapping the non-nullable variant:
 
-```php
-// Before
-'permissions' => AsNullableEnumCollectionBitmask::of(PermissionEnum::class)
-// After
-'permissions' => AsNullableEnum::of(AsEnumCollectionBitmask::of(PermissionEnum::class))
+```diff
+- 'permissions' => AsNullableEnumCollectionBitmask::of(PermissionEnum::class)
++ 'permissions' => AsNullableEnum::of(AsEnumCollectionBitmask::of(PermissionEnum::class))
 
-// Before
-'roles' => AsNullableEnumArrayObjectBitmask::of(PermissionEnum::class)
-// After
-'roles' => AsNullableEnum::of(AsEnumArrayObjectBitmask::of(PermissionEnum::class))
+- 'roles' => AsNullableEnumArrayObjectBitmask::of(PermissionEnum::class)
++ 'roles' => AsNullableEnum::of(AsEnumArrayObjectBitmask::of(PermissionEnum::class))
 
-// Before ($casts property)
-'permissions' => AsNullableEnumCollectionBitmask::class . ':' . PermissionEnum::class
-// After ($casts property)
-'permissions' => AsNullableEnum::class . ':' . AsEnumCollectionBitmask::class . ':' . PermissionEnum::class
+// $casts property syntax:
+- 'permissions' => AsNullableEnumCollectionBitmask::class . ':' . PermissionEnum::class
++ 'permissions' => AsNullableEnum::class . ':' . AsEnumCollectionBitmask::class . ':' . PermissionEnum::class
 ```
 
 ## Best Practices
