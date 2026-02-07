@@ -216,15 +216,6 @@ class Player extends Model
 // When $player->sport is 'basketball', $player->positions uses BasketballPositions
 ```
 
-You can use enum cases directly as map keys with the `case()` helper. For backed enums it uses `->value`, for non-backed enums it uses `->name`:
-
-```php
-'positions' => AsPolymorphicEnum::of('sport', [
-    ...AsPolymorphicEnum::case(SportEnum::Volleyball, AsEnumCollectionBitmask::of(VolleyballPositions::class)),
-    ...AsPolymorphicEnum::case(SportEnum::Basketball, AsEnumCollectionBitmask::of(BasketballPositions::class)),
-])
-```
-
 `AsPolymorphicEnum` reads the discriminator from raw attributes (not cast values), so it won't trigger infinite loops with other casts.
 
 It composes with `AsNullableEnum`:

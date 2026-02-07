@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\FatEnums\Casts;
 
-use ArtisanBuild\FatEnums\Casts\TestFixtures\ActivityEnum;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\BasketballPositions;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\SportEnum;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\VolleyballPositions;
@@ -110,7 +109,7 @@ final class AsPolymorphicEnumTest extends TestCase
     }
 
     #[Test]
-    public function it_supports_backed_enum_cases_via_case_helper()
+    public function it_works_with_backed_enum_values_as_keys()
     {
         $model = new class extends Model
         {
@@ -118,37 +117,14 @@ final class AsPolymorphicEnumTest extends TestCase
             {
                 return [
                     'positions' => AsPolymorphicEnum::of('sport', [
-                        ...AsPolymorphicEnum::case(SportEnum::Volleyball, AsEnumCollectionBitmask::of(VolleyballPositions::class)),
-                        ...AsPolymorphicEnum::case(SportEnum::Basketball, AsEnumCollectionBitmask::of(BasketballPositions::class)),
+                        SportEnum::Volleyball->value => AsEnumCollectionBitmask::of(VolleyballPositions::class),
+                        SportEnum::Basketball->value => AsEnumCollectionBitmask::of(BasketballPositions::class),
                     ]),
                 ];
             }
         };
 
         $model->setRawAttributes(['sport' => 'volleyball', 'positions' => 3]);
-
-        $this->assertInstanceOf(Collection::class, $model->positions);
-        $this->assertTrue($model->positions->contains(VolleyballPositions::SETTER));
-        $this->assertTrue($model->positions->contains(VolleyballPositions::LIBERO));
-    }
-
-    #[Test]
-    public function it_supports_non_backed_enum_cases_via_case_helper()
-    {
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'positions' => AsPolymorphicEnum::of('activity', [
-                        ...AsPolymorphicEnum::case(ActivityEnum::Volleyball, AsEnumCollectionBitmask::of(VolleyballPositions::class)),
-                        ...AsPolymorphicEnum::case(ActivityEnum::Basketball, AsEnumCollectionBitmask::of(BasketballPositions::class)),
-                    ]),
-                ];
-            }
-        };
-
-        $model->setRawAttributes(['activity' => 'Volleyball', 'positions' => 3]);
 
         $this->assertInstanceOf(Collection::class, $model->positions);
         $this->assertTrue($model->positions->contains(VolleyballPositions::SETTER));
