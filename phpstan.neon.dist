@@ -8,5 +8,7 @@ parameters:
         - config
     excludePaths:
         - src/**/*Test.php
+    ignoreErrors:
+        - identifier: trait.unused
     tmpDir: build/phpstan
 
