@@ -230,7 +230,7 @@ it('throws when enum does not have a DEFAULT constant', function (): void {
 it('throws when property has a union type', function (): void {
     $machine = new class
     {
-        use \ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
 
         public StateMachineTestEnum|string $status = 'test';
     };

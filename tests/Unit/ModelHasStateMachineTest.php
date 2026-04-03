@@ -59,16 +59,16 @@ it('allows a final state to transition to self on model', function (): void {
 });
 
 it('throws when model has no state_machines property', function (): void {
-    expect(fn () => new class extends \Illuminate\Database\Eloquent\Model
+    expect(fn () => new class extends Illuminate\Database\Eloquent\Model
     {
-        use \ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
+        use ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
     })->toThrow(Exception::class, 'define a $state_machines array property');
 });
 
 it('throws when state_machines property is not an array', function (): void {
-    expect(fn () => new class extends \Illuminate\Database\Eloquent\Model
+    expect(fn () => new class extends Illuminate\Database\Eloquent\Model
     {
-        use \ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
+        use ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
 
         protected string $state_machines = 'not_an_array';
     })->toThrow(InvalidArgumentException::class, 'must be an array');
@@ -95,7 +95,7 @@ it('throws when state machine cast is not an enum', function (): void {
 it('throws when state machine cast does not implement StateMachine', function (): void {
     $model = StateMachineModelBadEnum::find(1);
 
-    $model->status = \ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Sad;
+    $model->status = ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Sad;
 
     expect(fn () => $model->save())
         ->toThrow(InvalidArgumentException::class, 'does not implement');
