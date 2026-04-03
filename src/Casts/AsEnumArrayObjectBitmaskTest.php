@@ -95,6 +95,25 @@ final class AsEnumArrayObjectBitmaskTest extends TestCase
     }
 
     #[Test]
+    public function it_throws_exception_for_non_backed_enum_class_for_array_cast(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a BackedEnum');
+
+        $model = new class extends Model
+        {
+            protected function casts(): array
+            {
+                return [
+                    'roles' => AsEnumArrayObjectBitmask::of(\ArtisanBuild\FatEnums\Tests\Fixtures\UnbackedEnum::class),
+                ];
+            }
+        };
+
+        $model->roles = [];
+    }
+
+    #[Test]
     public function it_returns_empty_array_when_null_bitmask_is_stored(): void
     {
         $model = new RolesModel;

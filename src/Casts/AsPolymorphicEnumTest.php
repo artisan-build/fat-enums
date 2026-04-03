@@ -109,6 +109,26 @@ final class AsPolymorphicEnumTest extends TestCase
     }
 
     #[Test]
+    public function it_throws_exception_for_invalid_polymorphic_config(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid polymorphic cast configuration');
+
+        $model = new class extends Model
+        {
+            protected function casts(): array
+            {
+                return [
+                    'positions' => AsPolymorphicEnum::class.':'.base64_encode('not-valid-json'),
+                ];
+            }
+        };
+
+        $model->setRawAttributes(['positions' => 1]);
+        $_ = $model->positions;
+    }
+
+    #[Test]
     public function it_works_with_backed_enum_values_as_keys()
     {
         $model = new class extends Model

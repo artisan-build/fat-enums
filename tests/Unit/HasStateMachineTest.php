@@ -227,6 +227,18 @@ it('throws when enum does not have a DEFAULT constant', function (): void {
         ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not have a DEFAULT');
 });
 
+it('throws when property has a union type', function (): void {
+    $machine = new class
+    {
+        use \ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+
+        public StateMachineTestEnum|string $status = 'test';
+    };
+
+    expect(fn () => $machine->transitionTo('status', StateMachineTestEnum::MIDDLE))
+        ->toThrow(InvalidArgumentException::class, 'cannot be a union or intersection type');
+});
+
 enum NoAttributeStateMachineEnum: string implements StateMachine
 {
     use IsStateMachine;
