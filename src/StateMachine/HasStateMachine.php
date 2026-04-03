@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\FatEnums\StateMachine;
 
-use ArtisanBuild\FatEnums\StateMachine\CanTransitionTo;
-use ArtisanBuild\FatEnums\StateMachine\CanTransitionToSelf;
-use ArtisanBuild\FatEnums\StateMachine\FinalState;
 use BackedEnum;
 use Exception;
 use Illuminate\Support\Collection;

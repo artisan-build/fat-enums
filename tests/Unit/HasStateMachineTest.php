@@ -180,7 +180,7 @@ it('throws RuntimeException when source case has no CanTransitionTo attribute', 
         }
     ');
 
-    expect(fn () => \NoAttributeEnum::Foo->canTransitionTo(\NoAttributeEnum::Bar))
+    expect(fn () => NoAttributeEnum::Foo->canTransitionTo(NoAttributeEnum::Bar))
         ->toThrow(RuntimeException::class, 'does not have the CanTransitionTo attribute');
 });
 
