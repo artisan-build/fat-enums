@@ -93,4 +93,26 @@ final class AsEnumArrayObjectBitmaskTest extends TestCase
 
         $model->roles = [OtherPermissionEnum::READ];
     }
+
+    #[Test]
+    public function it_returns_empty_array_when_null_bitmask_is_stored(): void
+    {
+        $model = new RolesModel;
+
+        $model->setRawAttributes(['roles' => null]);
+
+        $this->assertIsArray($model->roles);
+        $this->assertCount(0, $model->roles);
+    }
+
+    #[Test]
+    public function it_throws_exception_when_non_backed_enum_value_in_array(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('All values must be BackedEnum cases');
+
+        $model = new RolesModel;
+
+        $model->roles = ['not_an_enum'];
+    }
 }

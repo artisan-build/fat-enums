@@ -119,3 +119,78 @@ test('a final state can still transition to self', function (): void {
     // No exception thrown
     expect($machine->status)->toBe(StateMachineTestEnum::CANCELLED);
 });
+
+it('can serialize a state machine configuration', function (): void {
+    $serialized = ClassWithStateMachine::serializeStateMachine('status');
+
+    expect($serialized)->toBeArray()
+        ->and($serialized)->toHaveKey('status')
+        ->and($serialized['status']['Default State'])->toBe('START')
+        ->and($serialized['status']['Final States'])->toBe(['CANCELLED'])
+        ->and($serialized['status']['Allowed Transitions'])->toHaveKeys(['START', 'MIDDLE', 'END'])
+        ->and($serialized['status']['Self Transitions'])->toBe(['CANCELLED']);
+});
+
+it('throws when validating a non-enum property', function (): void {
+    $machine = new ClassWithStateMachine;
+
+    expect(fn () => $machine->transitionTo('unguarded', 'anything'))
+        ->toThrow(InvalidArgumentException::class, 'is not an enum');
+});
+
+it('throws when onlyRunInVerbsState is called outside a Verbs State', function (): void {
+    expect(fn () => ClassWithStateMachine::onlyRunInVerbsState())
+        ->toThrow(Exception::class, 'only be used on Verbs States');
+});
+
+it('can use canTransitionFrom on the enum', function (): void {
+    expect(StateMachineTestEnum::MIDDLE->canTransitionFrom(StateMachineTestEnum::START))->toBeTrue();
+    expect(StateMachineTestEnum::START->canTransitionFrom(StateMachineTestEnum::MIDDLE))->toBeFalse();
+});
+
+it('can use transitionTo on the enum directly', function (): void {
+    $result = StateMachineTestEnum::START->transitionTo(StateMachineTestEnum::MIDDLE);
+
+    expect($result)->toBe(StateMachineTestEnum::MIDDLE);
+});
+
+it('throws InvalidStateTransition on enum transitionTo with invalid transition', function (): void {
+    expect(fn () => StateMachineTestEnum::MIDDLE->transitionTo(StateMachineTestEnum::START))
+        ->toThrow(InvalidStateTransition::class);
+});
+
+it('can use transitionFrom on the enum', function (): void {
+    $result = StateMachineTestEnum::MIDDLE->transitionFrom(StateMachineTestEnum::START);
+
+    expect($result)->toBe(StateMachineTestEnum::START);
+});
+
+it('throws InvalidStateTransition on enum transitionFrom with invalid transition', function (): void {
+    expect(fn () => StateMachineTestEnum::START->transitionFrom(StateMachineTestEnum::MIDDLE))
+        ->toThrow(InvalidStateTransition::class);
+});
+
+it('throws RuntimeException when source case has no CanTransitionTo attribute', function (): void {
+    $enum = enum_exists('NoAttributeEnum') ? null : eval('
+        enum NoAttributeEnum: string implements \ArtisanBuild\FatEnums\StateMachine\StateMachine {
+            use \ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
+            case Foo = "foo";
+            case Bar = "bar";
+            const DEFAULT = self::Foo;
+        }
+    ');
+
+    expect(fn () => \NoAttributeEnum::Foo->canTransitionTo(\NoAttributeEnum::Bar))
+        ->toThrow(RuntimeException::class, 'does not have the CanTransitionTo attribute');
+});
+
+it('can serialize to nova options', function (): void {
+    $options = StateMachineTestEnum::toNovaOptions();
+
+    expect($options)->toBe([
+        'START' => 'START',
+        'MIDDLE' => 'MIDDLE',
+        'END' => 'END',
+        'CANCELLED' => 'CANCELLED',
+    ]);
+});

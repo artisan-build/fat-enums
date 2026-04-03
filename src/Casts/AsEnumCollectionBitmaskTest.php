@@ -95,4 +95,23 @@ final class AsEnumCollectionBitmaskTest extends TestCase
 
         $model->permissions = collect([OtherPermissionEnum::READ]);
     }
+
+    #[Test]
+    public function it_throws_exception_for_non_backed_enum_class(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a BackedEnum');
+
+        $model = new class extends Model
+        {
+            protected function casts(): array
+            {
+                return [
+                    'permissions' => AsEnumCollectionBitmask::of(\ArtisanBuild\FatEnums\Tests\Fixtures\UnbackedEnum::class),
+                ];
+            }
+        };
+
+        $model->permissions = collect([]);
+    }
 }
