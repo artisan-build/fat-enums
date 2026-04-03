@@ -347,10 +347,16 @@ trait CollectionNewInstancePolyfill
 
     /**
      * Get one or a specified number of items randomly from the collection.
+     *
+     * @return ($number is null ? mixed : static)
      */
     #[Override]
-    public function random($number = null, $preserveKeys = false): static
+    public function random($number = null, $preserveKeys = false)
     {
+        if (is_null($number)) {
+            return $this->toBase()->random();
+        }
+
         return $this->newInstance($this->toBase()->random($number, $preserveKeys)->all());
     }
 
