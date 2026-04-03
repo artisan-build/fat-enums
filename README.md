@@ -110,6 +110,107 @@ The `HasStateMachine` trait provides a `serializeStateMachine` method that will 
 
 ---
 
+### Collectible Enums
+
+#### Overview
+
+Collectible enums give your enum classes a type-safe `collect()` method that returns an `EnumCollection` — a Laravel Collection subclass that guarantees every item is a case from the same enum.
+
+```php
+use ArtisanBuild\FatEnums\Collections\CollectibleEnum;
+use ArtisanBuild\FatEnums\Collections\CollectibleEnumMethods;
+
+enum SubscriptionPlan: string implements CollectibleEnum
+{
+    use CollectibleEnumMethods;
+
+    case Free = 'free';
+    case Pro = 'pro';
+    case Enterprise = 'enterprise';
+}
+```
+
+#### Basic Usage
+
+```php
+// Collect all cases
+$plans = SubscriptionPlan::collect();
+
+// Filter, reject, sort — all return an EnumCollection, even when empty
+$paidPlans = $plans->filter(
+    fn (SubscriptionPlan $plan) => $plan !== SubscriptionPlan::Free
+);
+
+// The enum class is always preserved
+$paidPlans->getEnumClass(); // SubscriptionPlan::class
+```
+
+#### Type Safety
+
+`EnumCollection` validates items on construction and mutation. Attempting to add a case from a different enum or a non-enum value will throw an `InvalidArgumentException`.
+
+```php
+$plans = SubscriptionPlan::collect();
+
+// Throws: Expected instance of SubscriptionPlan, got SomeOtherEnum
+$plans->push(SomeOtherEnum::Value);
+
+// Throws: All items must be an enum instance, string given
+$plans->push('not an enum');
+```
+
+This applies to `push`, `add`, `prepend`, `put`, `merge`, `pad`, `splice`, `offsetSet`, and all other mutation methods.
+
+#### Empty Collections
+
+To create an empty `EnumCollection`, use the `backed_by` parameter to specify the enum class:
+
+```php
+use ArtisanBuild\FatEnums\Collections\EnumCollection;
+
+$empty = new EnumCollection([], backed_by: SubscriptionPlan::class);
+$empty->getEnumClass(); // SubscriptionPlan::class
+
+// Also works with static factory methods
+$empty = EnumCollection::make([], backed_by: SubscriptionPlan::class);
+$empty = EnumCollection::empty(backed_by: SubscriptionPlan::class);
+```
+
+Constructing an `EnumCollection` from an empty array without `backed_by` will throw, since the collection has no way to know its type.
+
+#### Using the Polyfill Trait
+
+If you need to extend Laravel's `Collection` with your own constructor state, the `CollectionNewInstancePolyfill` trait is available independently. It ensures that all inherited Collection methods (`filter`, `sort`, `values`, etc.) return your subclass instead of a base `Collection`.
+
+```php
+use ArtisanBuild\FatEnums\Collections\CollectionNewInstancePolyfill;
+use Illuminate\Support\Collection;
+
+class TaggedCollection extends Collection
+{
+    use CollectionNewInstancePolyfill;
+
+    public function __construct($items = [], public readonly string $tag = 'default')
+    {
+        parent::__construct($items);
+    }
+
+    public function newInstance($items = []): static
+    {
+        return new static($items, tag: $this->tag);
+    }
+}
+
+$collection = new TaggedCollection([1, 2, 3], tag: 'important');
+$filtered = $collection->filter(fn ($v) => $v > 1);
+$filtered->tag; // 'important' — preserved through filter
+```
+
+> [!NOTE]
+> Laravel 13.3+ includes native `newInstance()` support on Collection, making this polyfill redundant for the instance methods. The polyfill will be removed when Laravel 12 support is dropped.
+
+---
+
 ### Enum Bitmask Casts
 
 This package provides Laravel Eloquent casts for working with enums as bitmasks, offering collection-based and array-based casts, a generic nullable wrapper (`AsNullableEnum`), and a polymorphic cast (`AsPolymorphicEnum`) that resolves based on another model field.

@@ -41,6 +41,13 @@ describe('EnumCollection constructor with enum class string', function (): void 
                 'Invalid enum class: stdClass',
             );
     });
+
+    it('can check if collection contains a case', function (): void {
+        $collection = new EnumCollection(CollectibleStringEnum::class);
+
+        expect($collection->contains(CollectibleStringEnum::Active))->toBeTrue();
+        expect($collection->contains(CollectibleIntEnum::One))->toBeFalse();
+    });
 });
 
 describe('EnumCollection constructor with iterable', function (): void {
@@ -121,7 +128,7 @@ describe('EnumCollection constructor with iterable', function (): void {
         expect(fn () => new EnumCollection($items))
             ->toThrow(
                 InvalidArgumentException::class,
-                'All items must be an instance of the same enum class: ArtisanBuild\FatEnums\Tests\Fixtures\CollectibleStringEnum',
+                'Expected instance of ArtisanBuild\FatEnums\Tests\Fixtures\CollectibleStringEnum, got ArtisanBuild\FatEnums\Tests\Fixtures\CollectibleIntEnum',
             );
     });
 });
@@ -149,22 +156,224 @@ describe('EnumCollection getEnumClass method', function (): void {
     });
 });
 
-describe('EnumCollection inherits Collection methods', function (): void {
-    it('can filter enum cases', function (): void {
-        $collection = new EnumCollection(CollectibleStringEnum::class);
+describe('EnumCollection constructor with backed_by parameter', function (): void {
+    it('creates an empty collection when backed_by is provided', function (): void {
+        $collection = new EnumCollection([], backed_by: CollectibleStringEnum::class);
 
-        $filtered = $collection->filter(
-            fn ($case) => $case === CollectibleStringEnum::Active
-        );
-
-        expect($filtered->count())->toBe(1);
-        expect($filtered->first())->toBe(CollectibleStringEnum::Active);
+        expect($collection)->toBeEmpty()
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
     });
 
-    it('can check if collection contains a case', function (): void {
+    it('creates a collection with items when backed_by is provided', function (): void {
+        $collection = new EnumCollection(
+            [CollectibleStringEnum::Active, CollectibleStringEnum::Pending],
+            backed_by: CollectibleStringEnum::class,
+        );
+
+        expect($collection->count())->toBe(2)
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+
+    it('throws when backed_by does not match item types', function (): void {
+        expect(fn () => new EnumCollection(
+            [CollectibleStringEnum::Active],
+            backed_by: CollectibleIntEnum::class,
+        ))->toThrow(InvalidArgumentException::class);
+    });
+
+    it('throws when backed_by is not a valid enum class', function (): void {
+        expect(fn () => new EnumCollection([], backed_by: stdClass::class))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('throws when constructing with empty array and no backed_by', function (): void {
+        expect(fn () => new EnumCollection([]))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('accepts matching enum class string and backed_by', function (): void {
+        $collection = new EnumCollection(CollectibleStringEnum::class, backed_by: CollectibleStringEnum::class);
+
+        expect($collection->count())->toBe(3)
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+
+    it('throws when enum class string and backed_by do not match', function (): void {
+        expect(fn () => new EnumCollection(CollectibleStringEnum::class, backed_by: CollectibleIntEnum::class))
+            ->toThrow(InvalidArgumentException::class);
+    });
+});
+
+describe('EnumCollection mutation validation', function (): void {
+    it('push accepts valid enum cases', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $collection->push(CollectibleStringEnum::Pending);
+
+        expect($collection->count())->toBe(2);
+    });
+
+    it('push rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->push(CollectibleIntEnum::One))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('push rejects non-enum values', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->push('not an enum'))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('add accepts valid enum cases', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $collection->add(CollectibleStringEnum::Pending);
+
+        expect($collection->count())->toBe(2);
+    });
+
+    it('add rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->add(CollectibleIntEnum::One))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('prepend accepts valid enum cases', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $collection->prepend(CollectibleStringEnum::Pending);
+
+        expect($collection->first())->toBe(CollectibleStringEnum::Pending);
+    });
+
+    it('prepend rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->prepend(CollectibleIntEnum::One))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('put accepts valid enum cases', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $collection->put(1, CollectibleStringEnum::Pending);
+
+        expect($collection->count())->toBe(2);
+    });
+
+    it('put rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->put(1, CollectibleIntEnum::One))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('merge accepts valid enum cases', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $merged = $collection->merge([CollectibleStringEnum::Pending]);
+
+        expect($merged->count())->toBe(2);
+    });
+
+    it('merge rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->merge([CollectibleIntEnum::One]))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('pad accepts valid enum case', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $padded = $collection->pad(3, CollectibleStringEnum::Pending);
+
+        expect($padded->count())->toBe(3);
+    });
+
+    it('pad rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection->pad(3, CollectibleIntEnum::One))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('offsetSet accepts valid enum case', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        $collection[1] = CollectibleStringEnum::Pending;
+
+        expect($collection->count())->toBe(2);
+    });
+
+    it('offsetSet rejects wrong enum type', function (): void {
+        $collection = new EnumCollection([CollectibleStringEnum::Active]);
+
+        expect(fn () => $collection[1] = CollectibleIntEnum::One)
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('splice with replacement accepts valid enum cases', function (): void {
         $collection = new EnumCollection(CollectibleStringEnum::class);
 
-        expect($collection->contains(CollectibleStringEnum::Active))->toBeTrue();
-        expect($collection->contains(CollectibleIntEnum::One))->toBeFalse();
+        $collection->splice(0, 1, [CollectibleStringEnum::Active]);
+
+        expect($collection->count())->toBe(3);
+    });
+
+    it('splice with replacement rejects wrong enum type', function (): void {
+        $collection = new EnumCollection(CollectibleStringEnum::class);
+
+        expect(fn () => $collection->splice(0, 1, [CollectibleIntEnum::One]))
+            ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('splice without replacement works normally', function (): void {
+        $collection = new EnumCollection(CollectibleStringEnum::class);
+
+        $spliced = $collection->splice(0, 1);
+
+        expect($spliced->count())->toBe(1)
+            ->and($spliced->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+});
+
+describe('EnumCollection static factory methods', function (): void {
+    it('make forwards backed_by to constructor', function (): void {
+        $collection = EnumCollection::make(
+            [CollectibleStringEnum::Active],
+            backed_by: CollectibleStringEnum::class,
+        );
+
+        expect($collection->count())->toBe(1)
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+
+    it('make creates empty collection with backed_by', function (): void {
+        $collection = EnumCollection::make([], backed_by: CollectibleStringEnum::class);
+
+        expect($collection)->toBeEmpty()
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+
+    it('empty creates empty collection with backed_by', function (): void {
+        $collection = EnumCollection::empty(backed_by: CollectibleStringEnum::class);
+
+        expect($collection)->toBeEmpty()
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
+    });
+
+    it('wrap forwards backed_by to constructor', function (): void {
+        $collection = EnumCollection::wrap(
+            [CollectibleStringEnum::Active, CollectibleStringEnum::Pending],
+            backed_by: CollectibleStringEnum::class,
+        );
+
+        expect($collection->count())->toBe(2)
+            ->and($collection->getEnumClass())->toBe(CollectibleStringEnum::class);
     });
 });
