@@ -6,6 +6,11 @@ namespace ArtisanBuild\FatEnums\Collections;
 
 trait CollectibleEnumMethods
 {
+    /**
+     * Collect all cases of this enum into a type-safe EnumCollection.
+     *
+     * @return EnumCollection<static>
+     */
     public static function collect(): EnumCollection
     {
         // We're going to use the enum class name to create the
