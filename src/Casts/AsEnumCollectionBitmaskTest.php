@@ -6,6 +6,7 @@ namespace ArtisanBuild\FatEnums\Casts;
 
 use ArtisanBuild\FatEnums\Casts\TestFixtures\OtherPermissionEnum;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\PermissionEnum;
+use ArtisanBuild\FatEnums\Casts\TestFixtures\PermissionsModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -15,18 +16,9 @@ use PHPUnit\Framework\TestCase;
 final class AsEnumCollectionBitmaskTest extends TestCase
 {
     #[Test]
-    public function it_casts_collection_of_enums_to_bitmask()
+    public function it_casts_collection_of_enums_to_bitmask(): void
     {
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-                ];
-            }
-        };
+        $model = new PermissionsModel;
 
         $permissions = collect([PermissionEnum::READ, PermissionEnum::WRITE]);
         $model->permissions = $permissions;
@@ -35,18 +27,9 @@ final class AsEnumCollectionBitmaskTest extends TestCase
     }
 
     #[Test]
-    public function it_casts_bitmask_to_collection_of_enums()
+    public function it_casts_bitmask_to_collection_of_enums(): void
     {
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-                ];
-            }
-        };
+        $model = new PermissionsModel;
 
         $model->setRawAttributes(['permissions' => 3]);
 
@@ -57,81 +40,60 @@ final class AsEnumCollectionBitmaskTest extends TestCase
     }
 
     #[Test]
-    public function it_throws_exception_when_null_provided_to_non_nullable_collection_cast()
+    public function it_throws_exception_when_null_provided_to_non_nullable_collection_cast(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Value cannot be null for non-nullable cast');
 
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-                ];
-            }
-        };
+        $model = new PermissionsModel;
 
         $model->permissions = null;
     }
 
     #[Test]
-    public function it_throws_exception_for_invalid_enum_class()
+    public function it_throws_exception_for_invalid_enum_class(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Class InvalidEnum must be an enum');
 
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
         $model = new class extends Model
         {
+            /**
+             * Get the casts array.
+             *
+             * @return array<string, string>
+             */
             protected function casts(): array
             {
                 return [
+                    /** @phpstan-ignore argument.type */
                     'permissions' => AsEnumCollectionBitmask::of('InvalidEnum'),
                 ];
             }
         };
 
+        /** @phpstan-ignore property.notFound */
         $model->permissions = collect([]);
     }
 
     #[Test]
-    public function it_throws_exception_for_invalid_collection_value()
+    public function it_throws_exception_for_invalid_collection_value(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Value must be a Collection of BackedEnum cases');
 
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-                ];
-            }
-        };
+        $model = new PermissionsModel;
 
         $model->permissions = 'invalid';
     }
 
     #[Test]
-    public function it_throws_exception_when_enum_case_is_not_instance_of_registered_enum_class()
+    public function it_throws_exception_when_enum_case_is_not_instance_of_registered_enum_class(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('All enum cases must be instances of ArtisanBuild\FatEnums\Casts\TestFixtures\PermissionEnum');
 
-        /** @var Model&{permissions: Collection<PermissionEnum>} */
-        $model = new class extends Model
-        {
-            protected function casts(): array
-            {
-                return [
-                    'permissions' => AsEnumCollectionBitmask::of(PermissionEnum::class),
-                ];
-            }
-        };
+        $model = new PermissionsModel;
 
         $model->permissions = collect([OtherPermissionEnum::READ]);
     }
