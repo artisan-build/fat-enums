@@ -5,12 +5,12 @@
 	"license": "MIT",
 	"require": {
         "php": "^8.4",
-        "illuminate/support": "^11.36|^12.0|^13.0"
+        "illuminate/support": "^11.36|^12.0|^13.3"
     },
     "require-dev": {
         "calebporzio/sushi": "^2.5.2",
         "larastan/larastan": "^v3.0.2",
-        "orchestra/testbench": "^v9.9.0",
+        "orchestra/testbench": "^9.9|^10.0|^11.0",
         "pestphp/pest": "^v3.7.1",
         "laravel/pint": "^1.19.0",
         "phpstan/phpstan": "^2.1.0"

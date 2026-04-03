@@ -13,8 +13,16 @@ jobs:
       fail-fast: true
       matrix:
         php: [8.4, 8.5]
+        laravel: [11, 12, 13]
+        include:
+          - laravel: 11
+            testbench: ^9.9
+          - laravel: 12
+            testbench: ^10.0
+          - laravel: 13
+            testbench: ^11.0
 
-    name: PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }}
 
     steps:
       - name: Checkout code
@@ -28,7 +36,9 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+        run: |
+          composer require "orchestra/testbench:${{ matrix.testbench }}" --no-update
+          composer install --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
         run: composer ready
