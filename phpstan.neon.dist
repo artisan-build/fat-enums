@@ -6,5 +6,7 @@ parameters:
     paths:
         - src
         - config
+    excludePaths:
+        - src/**/*Test.php
     tmpDir: build/phpstan
 
