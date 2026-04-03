@@ -66,13 +66,11 @@ final class AsEnumCollectionBitmaskTest extends TestCase
             protected function casts(): array
             {
                 return [
-                    /** @phpstan-ignore argument.type */
                     'permissions' => AsEnumCollectionBitmask::of('InvalidEnum'),
                 ];
             }
         };
 
-        /** @phpstan-ignore property.notFound */
         $model->permissions = collect([]);
     }
 

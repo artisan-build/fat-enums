@@ -64,13 +64,11 @@ final class AsEnumArrayObjectBitmaskTest extends TestCase
             protected function casts(): array
             {
                 return [
-                    /** @phpstan-ignore argument.type */
                     'roles' => AsEnumArrayObjectBitmask::of('InvalidEnum'),
                 ];
             }
         };
 
-        /** @phpstan-ignore property.notFound */
         $model->roles = [];
     }
 
