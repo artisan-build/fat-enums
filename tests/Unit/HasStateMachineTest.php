@@ -194,3 +194,50 @@ it('can serialize to nova options', function (): void {
         'CANCELLED' => 'CANCELLED',
     ]);
 });
+
+it('throws when property has no type defined', function (): void {
+    $machine = new class
+    {
+        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+
+        public $untyped;
+    };
+
+    expect(fn () => $machine->transitionTo('untyped', StateMachineTestEnum::MIDDLE))
+        ->toThrow(InvalidArgumentException::class, 'does not have a type defined');
+});
+
+it('throws when enum does not implement StateMachine', function (): void {
+    $machine = new class
+    {
+        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+
+        public ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum $status = ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Happy;
+    };
+
+    expect(fn () => $machine->transitionTo('status', ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Sad))
+        ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not implement');
+});
+
+it('throws when enum does not have a DEFAULT constant', function (): void {
+    if (! enum_exists('NoDefaultEnum')) {
+        eval('
+            enum NoDefaultEnum: string implements \ArtisanBuild\FatEnums\StateMachine\StateMachine {
+                use \ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
+                case Foo = "foo";
+            }
+        ');
+    }
+
+    $machine = new class
+    {
+        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+
+        public NoDefaultEnum $status;
+    };
+
+    $machine->status = NoDefaultEnum::Foo;
+
+    expect(fn () => $machine->transitionTo('status', NoDefaultEnum::Foo))
+        ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not have a DEFAULT');
+});
