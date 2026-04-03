@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use ArtisanBuild\FatEnums\StateMachine\CanTransitionTo;
 use ArtisanBuild\FatEnums\StateMachine\InvalidStateTransition;
+use ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
+use ArtisanBuild\FatEnums\StateMachine\StateMachine;
 use ArtisanBuild\FatEnums\Tests\Fixtures\ClassWithStateMachine;
 use ArtisanBuild\FatEnums\Tests\Fixtures\StateMachineTestEnum;
 
@@ -171,16 +174,7 @@ it('throws InvalidStateTransition on enum transitionFrom with invalid transition
 });
 
 it('throws RuntimeException when source case has no CanTransitionTo attribute', function (): void {
-    $enum = enum_exists('NoAttributeEnum') ? null : eval('
-        enum NoAttributeEnum: string implements \ArtisanBuild\FatEnums\StateMachine\StateMachine {
-            use \ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
-            case Foo = "foo";
-            case Bar = "bar";
-            const DEFAULT = self::Foo;
-        }
-    ');
-
-    expect(fn () => NoAttributeEnum::Foo->canTransitionTo(NoAttributeEnum::Bar))
+    expect(fn () => NoAttributeStateMachineEnum::Foo->canTransitionTo(NoAttributeStateMachineEnum::Bar))
         ->toThrow(RuntimeException::class, 'does not have the CanTransitionTo attribute');
 });
 
@@ -220,24 +214,35 @@ it('throws when enum does not implement StateMachine', function (): void {
 });
 
 it('throws when enum does not have a DEFAULT constant', function (): void {
-    if (! enum_exists('NoDefaultEnum')) {
-        eval('
-            enum NoDefaultEnum: string implements \ArtisanBuild\FatEnums\StateMachine\StateMachine {
-                use \ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
-                case Foo = "foo";
-            }
-        ');
-    }
-
     $machine = new class
     {
         use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
 
-        public NoDefaultEnum $status;
+        public NoDefaultTestEnum $status;
     };
 
-    $machine->status = NoDefaultEnum::Foo;
+    $machine->status = NoDefaultTestEnum::Foo;
 
-    expect(fn () => $machine->transitionTo('status', NoDefaultEnum::Foo))
+    expect(fn () => $machine->transitionTo('status', NoDefaultTestEnum::Foo))
         ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not have a DEFAULT');
 });
+
+enum NoAttributeStateMachineEnum: string implements StateMachine
+{
+    use IsStateMachine;
+
+    case Foo = 'foo';
+    case Bar = 'bar';
+
+    const DEFAULT = self::Foo;
+}
+
+enum NoDefaultTestEnum: string implements StateMachine
+{
+    use IsStateMachine;
+
+    #[CanTransitionTo([self::Bar])]
+    case Foo = 'foo';
+
+    case Bar = 'bar';
+}
