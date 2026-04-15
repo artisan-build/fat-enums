@@ -7,6 +7,7 @@ namespace ArtisanBuild\FatEnums\Casts;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\OtherPermissionEnum;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\PermissionEnum;
 use ArtisanBuild\FatEnums\Casts\TestFixtures\PermissionsModel;
+use ArtisanBuild\FatEnums\Tests\Fixtures\UnbackedEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -107,7 +108,7 @@ final class AsEnumCollectionBitmaskTest extends TestCase
             protected function casts(): array
             {
                 return [
-                    'permissions' => AsEnumCollectionBitmask::of(\ArtisanBuild\FatEnums\Tests\Fixtures\UnbackedEnum::class),
+                    'permissions' => AsEnumCollectionBitmask::of(UnbackedEnum::class),
                 ];
             }
         };

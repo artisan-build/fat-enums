@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use ArtisanBuild\FatEnums\StateMachine\CanTransitionTo;
+use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+use ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig;
 use ArtisanBuild\FatEnums\StateMachine\InvalidStateTransition;
 use ArtisanBuild\FatEnums\StateMachine\IsStateMachine;
 use ArtisanBuild\FatEnums\StateMachine\StateMachine;
 use ArtisanBuild\FatEnums\Tests\Fixtures\ClassWithStateMachine;
 use ArtisanBuild\FatEnums\Tests\Fixtures\StateMachineTestEnum;
+use ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum;
 
 it('can get the default state', function (): void {
     expect(ClassWithStateMachine::getDefaultState('status'))
@@ -192,7 +195,7 @@ it('can serialize to nova options', function (): void {
 it('throws when property has no type defined', function (): void {
     $machine = new class
     {
-        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+        use HasStateMachine;
 
         public $untyped;
     };
@@ -204,19 +207,19 @@ it('throws when property has no type defined', function (): void {
 it('throws when enum does not implement StateMachine', function (): void {
     $machine = new class
     {
-        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+        use HasStateMachine;
 
-        public ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum $status = ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Happy;
+        public StringBackedEnum $status = StringBackedEnum::Happy;
     };
 
-    expect(fn () => $machine->transitionTo('status', ArtisanBuild\FatEnums\Tests\Fixtures\StringBackedEnum::Sad))
-        ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not implement');
+    expect(fn () => $machine->transitionTo('status', StringBackedEnum::Sad))
+        ->toThrow(InvalidStateMachineConfig::class, 'does not implement');
 });
 
 it('throws when enum does not have a DEFAULT constant', function (): void {
     $machine = new class
     {
-        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+        use HasStateMachine;
 
         public NoDefaultTestEnum $status;
     };
@@ -224,13 +227,13 @@ it('throws when enum does not have a DEFAULT constant', function (): void {
     $machine->status = NoDefaultTestEnum::Foo;
 
     expect(fn () => $machine->transitionTo('status', NoDefaultTestEnum::Foo))
-        ->toThrow(ArtisanBuild\FatEnums\StateMachine\InvalidStateMachineConfig::class, 'does not have a DEFAULT');
+        ->toThrow(InvalidStateMachineConfig::class, 'does not have a DEFAULT');
 });
 
 it('throws when property has a union type', function (): void {
     $machine = new class
     {
-        use ArtisanBuild\FatEnums\StateMachine\HasStateMachine;
+        use HasStateMachine;
 
         public StateMachineTestEnum|string $status = 'test';
     };
