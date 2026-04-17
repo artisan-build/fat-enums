@@ -6,6 +6,7 @@ namespace ArtisanBuild\FatEnums\Casts\TestFixtures;
 
 use ArtisanBuild\FatEnums\Casts\AsEnumArrayObjectBitmask;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 /**
  * Test fixture model for array-based bitmask casting.
@@ -19,6 +20,7 @@ class RolesModel extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

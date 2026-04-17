@@ -6,6 +6,7 @@ namespace ArtisanBuild\FatEnums\Tests\Fixtures;
 
 use ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 use Sushi\Sushi;
 
 class StateMachineModelStringCast extends Model
@@ -19,6 +20,7 @@ class StateMachineModelStringCast extends Model
         ['id' => 1, 'status' => 'START'],
     ];
 
+    #[Override]
     protected function casts(): array
     {
         return ['status' => 'string'];

@@ -7,6 +7,7 @@ namespace ArtisanBuild\FatEnums\Casts\TestFixtures;
 use ArtisanBuild\FatEnums\Casts\AsEnumCollectionBitmask;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * Test fixture model for collection-based bitmask casting.
@@ -20,6 +21,7 @@ class PermissionsModel extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

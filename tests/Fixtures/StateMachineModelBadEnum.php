@@ -6,6 +6,7 @@ namespace ArtisanBuild\FatEnums\Tests\Fixtures;
 
 use ArtisanBuild\FatEnums\StateMachine\ModelHasStateMachine;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 use Sushi\Sushi;
 
 class StateMachineModelBadEnum extends Model
@@ -19,6 +20,7 @@ class StateMachineModelBadEnum extends Model
         ['id' => 1, 'status' => 'happy'],
     ];
 
+    #[Override]
     protected function casts(): array
     {
         return ['status' => StringBackedEnum::class];
