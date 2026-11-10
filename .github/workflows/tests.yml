@@ -12,11 +12,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.4, 8.5]
-        laravel: [11, 12, 13]
+        # Single-entry matrix on purpose: production runs 8.5, so that is all CI tests.
+        # Add 8.6 here when it reaches RC. Do not re-add 8.4 (nothing runs it).
+        php: [8.5]
+        # Laravel 11 is gone for the same reason 8.4 is: every 11.x release is
+        # blocked by composer's security-advisory policy, so the lane cannot
+        # install at all. Nothing runs 11. Do not re-add it.
+        laravel: [12, 13]
         include:
-          - laravel: 11
-            testbench: ^9.9
           - laravel: 12
             testbench: ^10.0
           - laravel: 13
@@ -55,7 +58,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@2.37.0
         with:
-          php-version: 8.4
+          php-version: 8.5
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: xdebug
 
