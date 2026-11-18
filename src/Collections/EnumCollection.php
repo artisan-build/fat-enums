@@ -97,6 +97,11 @@ class EnumCollection extends Collection
 
     /**
      * Push one or more items onto the end of the collection.
+     *
+     * @param  T  ...$values
+     * @return $this
+     *
+     * @phpstan-self-out static<T>
      */
     #[Override]
     public function push(...$values): static
@@ -108,17 +113,29 @@ class EnumCollection extends Collection
 
     /**
      * Push an item onto the beginning of the collection.
+     *
+     * @param  T  $value
+     * @param  array-key|null  $key
+     * @return $this
+     *
+     * @phpstan-self-out static<T>
      */
     #[Override]
     public function prepend($value, $key = null): static
     {
         $this->validateItem($value);
 
-        return parent::prepend($value, $key);
+        return parent::prepend(...func_get_args());
     }
 
     /**
      * Put an item in the collection by key.
+     *
+     * @param  array-key  $key
+     * @param  T  $value
+     * @return $this
+     *
+     * @phpstan-self-out static<T>
      */
     #[Override]
     public function put($key, $value): static
@@ -130,6 +147,11 @@ class EnumCollection extends Collection
 
     /**
      * Add an item to the collection.
+     *
+     * @param  T  $item
+     * @return $this
+     *
+     * @phpstan-self-out static<T>
      */
     #[Override]
     public function add($item): static
