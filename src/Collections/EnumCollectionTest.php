@@ -272,6 +272,36 @@ describe('EnumCollection mutation validation', function (): void {
             ->toThrow(InvalidArgumentException::class);
     });
 
+    it('preserves the same enum collection and rejects foreign values after mutation', function (string $method, array $arguments, array $expected): void {
+        $collection = new EnumCollection([], backed_by: CollectibleStringEnum::class);
+
+        $result = $collection->{$method}(...$arguments);
+
+        expect($result)->toBe($collection)
+            ->toBeInstanceOf(EnumCollection::class)
+            ->and($result->getEnumClass())->toBe(CollectibleStringEnum::class)
+            ->and($result->all())->toBe($expected);
+
+        foreach ([CollectibleIntEnum::One, 'not an enum'] as $foreignValue) {
+            $invalidArguments = $arguments;
+            $invalidArguments[$method === 'put' ? 1 : 0] = $foreignValue;
+
+            expect(fn () => $result->{$method}(...$invalidArguments))
+                ->toThrow(InvalidArgumentException::class);
+            expect($collection->all())->toBe($expected);
+        }
+
+        expect($result->push(CollectibleStringEnum::Active))->toBe($collection)
+            ->and($collection->last())->toBe(CollectibleStringEnum::Active);
+    })->with([
+        'push' => ['push', [CollectibleStringEnum::Pending], [CollectibleStringEnum::Pending]],
+        'prepend without key' => ['prepend', [CollectibleStringEnum::Pending], [CollectibleStringEnum::Pending]],
+        'prepend with key' => ['prepend', [CollectibleStringEnum::Pending, 'state'], ['state' => CollectibleStringEnum::Pending]],
+        'put with string key' => ['put', ['state', CollectibleStringEnum::Pending], ['state' => CollectibleStringEnum::Pending]],
+        'put with integer key' => ['put', [5, CollectibleStringEnum::Pending], [5 => CollectibleStringEnum::Pending]],
+        'add' => ['add', [CollectibleStringEnum::Pending], [CollectibleStringEnum::Pending]],
+    ]);
+
     it('merge accepts valid enum cases', function (): void {
         $collection = new EnumCollection([CollectibleStringEnum::Active]);
 
